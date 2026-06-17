@@ -602,158 +602,162 @@ function doAccLogout() {
   document.getElementById('accPassInput').value = '';
   goLanding();
 }
-
 // ══════════ TABLE ══════════
 function fmt2(v) {
   if (v === null || v === undefined || v === '') return '—';
-  const n = parseFloat(v); if (isNaN(n)) return String(v);
+  const n = parseFloat(v);
+  if (isNaN(n)) return String(v);
   return '₱' + n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
+
 function renderTable() {
-  // Finds the table body inside your admin section
-  const tbody = document.querySelector('table tbody') || document.querySelector('#adminSection table tbody');
+  const q = (document.getElementById('searchBox').value || '').toLowerCase();
+  const tbody = document.getElementById('empTbody');
   if (!tbody) return;
   tbody.innerHTML = '';
-
-  // Filter logic if you have a search bar active
-  const q = document.querySelector('input[placeholder*="Search"]')?.value.toLowerCase() || '';
-
-  let count = 1;
-  DB.forEach((emp, index) => {
-    const name = (emp['NAME OF EMPLOYEE'] || '').toString();
-    const sureNo = (emp['SURE! NO'] || '').toString();
-    const idNo = (emp['ID NO'] || '').toString();
-
-    // Skip row if it doesn't match search criteria
-    if (q && !name.toLowerCase().includes(q) && !sureNo.toLowerCase().includes(q) && !idNo.toLowerCase().includes(q)) {
-      return;
-    }
-
+  
+  let shown = 0;
+  
+  DB.forEach((e, i) => {
+    const nm = (e['NAME OF EMPLOYEE'] || '').toLowerCase();
+    const sr = (e['SURE! NO'] || '').toLowerCase();
+    const id = String(e['ID NO'] || '').toLowerCase();
+    
+    if (q && !nm.includes(q) && !sr.includes(q) && !id.includes(q)) return;
+    shown++;
+    
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${count++}</td>
-      <td>${emp['SURE! NO'] || ''}</td>
-      <td>${emp['ID NO'] || ''}</td>
-      <td>${emp['PASSWORD'] || ''}</td>
-      <td>${emp['NAME OF EMPLOYEE'] || ''}</td>
-      <td>₱${parseFloat(emp['RATE PER HOUR'] || 0).toFixed(2)}</td>
-      <td>₱${parseFloat(emp['POSITIONAL BONUS'] || 0).toFixed(2)}</td>
-      <td>${parseFloat(emp['TOTAL HOURS WORKED'] || 0)}</td>
-      <td>₱${parseFloat(emp['TOTAL BASIC PAY'] || 0).toFixed(2)}</td>
-      <td style="font-weight: bold; color: #2e7d32;">₱${parseFloat(emp['NET PAY'] || 0).toFixed(2)}</td>
+      <td>${i + 1}</td>
+      <td><span class="badge-sure">${e['SURE! NO'] || ''}</span></td>
+      <td>${e['ID NO'] || ''}</td>
+      <td><span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px">${e['PASSWORD'] || ''}</span></td>
+      <td><strong>${(e['NAME OF EMPLOYEE'] || '').trim()}</strong></td>
+      <td class="num">${fmt2(e['MONTHLY BASIC RATE'])}</td>
+      <td class="num">${fmt2(e['POSITION BONUS'])}</td>
+      <td class="num">${e['DAYS WORKED'] || '—'}</td>
+      <td class="num" style="font-weight:600">${fmt2(e['TOTAL BASIC PAY'])}</td>
+      <td class="num" style="font-weight:700;color:#27ae60">${fmt2(e['NET PAY'])}</td>
       <td>
-        <button class="btn btn-primary btn-sm" onclick="showEditModal(${index})">Edit</button>
+        <button class="btn btn-blue btn-sm" onclick="showEditModal(${i})">Edit</button>
+        <button class="btn btn-red btn-sm" onclick="deleteRecord(${i})">Delete</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
-}
   
-  // Optional: Update your summary cards dynamically
-  updateSummaryCards();
+  document.getElementById('statsBar').textContent = `📊 Showing ${shown} of ${DB.length} employee records.`;
 }
-// ══════════ FORM SECTIONS ══════════
-const SECTIONS = {
-  '👤 Employee Identity': [
-    ['SURE! NO','SURE! Number'],['ID NO','ID Number'],['PASSWORD','Password (Login)'],['NAME OF EMPLOYEE','Name']
-  ],
-  '💼 Salary Info': [
-    ['MONTHLY BASIC RATE','Monthly Basic Rate'],['POSITION BONUS','Position Bonus'],['DE MINIMIS','De Minimis'],
-    ['BASIC DAILY RATE','Basic Daily Rate'],['DAYS WORKED','Days Worked'],['BI-MONTHLY BASIC PAY','Bi-Monthly Basic Pay']
-  ],
-  '⏱️ Absences & Tardiness': [
-    ['ABSENCES HRS','Absences (Hrs)'],['ABSENCES AMT','Absences Amount'],
-    ['TARDINESS MIN','Tardiness (Min)'],['TARDINESS AMT','Tardiness Amount'],
-    ['BASIC PAY ADJUSTMENT','Basic Pay Adjustment'],['TOTAL BASIC PAY','Total Basic Pay']
-  ],
-  '🕐 Overtime & Holidays': [
-    ['REGULAR OVERTIME HOURS','Reg. OT Hours'],['REGULAR OVERTIME AMT','Reg. OT Amount'],
-    ['TOTAL REGULAR HOLIDAY HOURS','Reg. Holiday Hrs'],['TOTAL REGULAR HOLIDAY AMT','Reg. Holiday Amt'],
-    ['TOTAL SPECIAL HOLIDAY HOURS','Spec. Holiday Hrs'],['TOTAL SPECIAL HOLIDAY AMT','Spec. Holiday Amt'],
-    ['TOTAL REST DAY ON REGULAR HOLIDAY HOURS','Rest Day Reg. Hol. Hrs'],['TOTAL REST DAY ON REGULAR HOLIDAY AMT','Rest Day Reg. Hol. Amt'],
-    ['TOTAL REST DAY ON SPECIAL HOLIDAY HOURS','Rest Day Spec. Hol. Hrs'],['TOTAL REST DAY ON SPECIAL HOLIDAY AMT','Rest Day Spec. Hol. Amt'],
-    ['TOTAL REGULAR HOLIDAY OVERTIME HOURS','Reg. Hol. OT Hrs'],['TOTAL REGULAR HOLIDAY OVERTIME AMOUNT','Reg. Hol. OT Amt'],
-    ['TOTAL SPECIAL HOLIDAY OVERTIME HOURS','Spec. Hol. OT Hrs'],['TOTAL SPECIAL HOLIDAY OVERTIME AMOUNT','Spec. Hol. OT Amt'],
-    ['TOTAL OVERTIME/ HOLIDAY PAY','Total OT / Holiday Pay']
-  ],
-  '🌙 Night Differential': [
-    ['NIGHT DIFF. REGULAR HOURS','Night Diff. Reg. Hrs'],['NIGHT DIFF. REGULAR AMT','Night Diff. Reg. Amt'],
-    ['TOTAL NIGHT DIFF. ON REGULAR HOLIDAY HOURS','Night Diff. Reg. Hol. Hrs'],['TOTAL NIGHT DIFF. ON REGULAR HOLIDAY AMT','Night Diff. Reg. Hol. Amt'],
-    ['TOTAL NIGHT DIFF. ON SPECIAL HOLIDAY HOURS','Night Diff. Spec. Hol. Hrs'],['TOTAL NIGHT DIFF. ON SPECIAL HOLIDAY AMT','Night Diff. Spec. Hol. Amt'],
-    ['TOTAL NIGHT DIFF. OVERTIME HOURS','Night Diff. OT Hrs'],['TOTAL NIGHT DIFF. OVERTIME AMT','Night Diff. OT Amt'],
-    ['TOTAL NIGHT DIFF. PAY','Total Night Diff. Pay']
-  ],
-  '💰 Allowances & Gross Pay': [
-    ['NON-BASIC PAY ADJUSTMENT','Non-Basic Pay Adj.'],['TOTAL POSITION ALLOWANCE','Position Allowance'],
-    ['TRANSPORTATION AFTER 10PM','Transportation after 10PM'],['REFRRAL FEE/ MEAL ALLOWANCE','Referral / Meal Allowance'],
-    ['TOTAL DE MINIMIS','Total De Minimis'],['TOTAL TRANSPORTATION ALLOWANCE','Transportation Allowance'],
-    ['TOTAL SIL HOURS','SIL Hours'],['TOTAL SIL AMT','SIL Amount'],
-    ['13TH MONTH PAY','13th Month Pay'],['SERVICE CHARGE','Service Charge'],
-    ['TOTAL  TAXABLE GROSS AMT','Total Taxable Gross Pay']
-  ],
-  '✂️ Deductions & Net Pay': [
-    ['SSS','SSS'],['WISP','WISP'],['PHIC','PhilHealth'],['HDMF','HDMF'],['W/TAX','Withholding Tax'],
-    ['HDMF MODIFIED','HDMF Modified'],['SSS LOAN','SSS Loan'],['PAG-IBIG LOAN','Pag-IBIG Loan'],
-    ['BEREAVEMENT/ MEDICAL ALLOWANCE','Bereavement / Medical'],['OTHERS','Others'],
-    ['TOTAL DEDUCTIONS','Total Deductions'],['NET PAY','Net Pay']
-  ],
-  '🏛️ Government Numbers & Bank': [
-    ['TIN','TIN'],['SSS NO.','SSS No.'],['PHILHEALTH NO.','PhilHealth No.'],['HDMF NO.','HDMF No.'],['BANK ACCOUNT','Bank Account']
-  ]
-};
 
-function buildForm(rec, containerId) {
-  let html = '';
-  for (const [sec, fields] of Object.entries(SECTIONS)) {
-    html += `<div class="field-group"><h4>${sec}</h4><div class="form-grid">`;
-    for (const [key, label] of fields) {
-      const val = rec && rec[key] !== null && rec[key] !== undefined ? rec[key] : '';
-      const isPass = key === 'PASSWORD';
-      html += `<div class="form-row">
-        <label>${label}</label>
-        <input data-key="${key}" value="${String(val).replace(/"/g,'&quot;')}" ${isPass ? 'class="highlight"' : ''}>
-      </div>`;
-    }
-    html += '</div></div>';
+// ══════════ NAVIGATION ══════════
+function hideAll() {
+  document.getElementById('landingSection').style.display = 'none';
+  document.getElementById('empLoginSection').style.display = 'none';
+  document.getElementById('payslipSection').style.display = 'none';
+  document.getElementById('accLoginSection').style.display = 'none';
+  document.getElementById('accDBSection').style.display = 'none';
+}
+
+function goLanding() { hideAll(); document.getElementById('landingSection').style.display = 'flex'; }
+function showEmpLogin() { hideAll(); document.getElementById('empLoginSection').style.display = 'flex'; document.getElementById('empIdInput').focus(); }
+function showAccLogin() { hideAll(); document.getElementById('accLoginSection').style.display = 'flex'; document.getElementById('accPassInput').focus(); }
+
+function doEmpLogin() {
+  const idInp = document.getElementById('empIdInput').value.trim();
+  const passInp = document.getElementById('empPassInput').value.trim();
+  loadDB();
+  const found = DB.find(e => String(e['ID NO']).trim() === idInp && String(e['PASSWORD']).trim() === passInp);
+  if (found) {
+    document.getElementById('empErrMsg').style.display = 'none';
+    hideAll();
+    document.getElementById('payslipSection').style.display = 'block';
+    renderPayslip(found);
+  } else {
+    document.getElementById('empErrMsg').style.display = 'block';
   }
-  document.getElementById(containerId).innerHTML = html;
 }
 
-// ══════════ EDIT ══════════
+function doEmpLogout() {
+  document.getElementById('empIdInput').value = '';
+  document.getElementById('empPassInput').value = '';
+  goLanding();
+}
+
+function updatePeriodLabels() {
+  const p = getPeriod();
+  const els = document.querySelectorAll('.period');
+  els.forEach(el => el.textContent = p);
+}
+
+function changePeriod() {
+  const current = getPeriod();
+  const n = prompt('Enter new Payroll Period Label:', current);
+  if (n !== null && n.trim() !== '') {
+    localStorage.setItem(PERIOD_KEY, n.trim());
+    updatePeriodLabels();
+    toast('📅 Period label updated!');
+  }
+}
+
+// ══════════ EDIT SYSTEM ══════════
 function showEditModal(idx) {
   editIdx = idx;
-  document.getElementById('modalTitle').textContent = 'Edit: ' + (DB[idx]['NAME OF EMPLOYEE']||'').trim();
+  document.getElementById('modalTitle').textContent = `Edit Employee: ${DB[idx]['NAME OF EMPLOYEE'] || ''}`;
   buildForm(DB[idx], 'formFields');
   document.getElementById('editOverlay').classList.add('show');
 }
+
+function buildForm(data, containerId) {
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = '';
+  
+  for (const groupName in FIELD_MAP) {
+    const grp = document.createElement('div');
+    grp.className = 'field-group';
+    grp.innerHTML = `<h4>${groupName}</h4>`;
+    
+    const grid = document.createElement('div');
+    grid.className = 'form-grid';
+    
+    FIELD_MAP[groupName].forEach(f => {
+      const key = f[0];
+      const labelText = f[1];
+      const val = data ? (data[key] !== null && data[key] !== undefined ? data[key] : '') : '';
+      
+      const isPass = key === 'PASSWORD';
+      const row = document.createElement('div');
+      row.className = 'form-row';
+      row.innerHTML = `
+        <label>${labelText}</label>
+        <input type="${isPass?'text':'text'}" class="${isPass?'highlight':''}" data-key="${key}" value="${val}" autocomplete="off">
+      `;
+      grid.appendChild(row);
+    });
+    
+    grp.appendChild(grid);
+    cont.appendChild(grp);
+  }
+}
+
 function saveRecord() {
   if (editIdx === null) return;
-
-  // 1. Target all the dynamically built input fields inside the edit modal
+  const rec = DB[editIdx];
+  
   document.querySelectorAll('#formFields input[data-key]').forEach(inp => {
     const key = inp.getAttribute('data-key');
     const raw = inp.value.trim();
-
     if (raw === '') {
-      DB[editIdx][key] = null;
+      rec[key] = null;
     } else {
       const n = parseFloat(raw);
-      DB[editIdx][key] = isNaN(n) ? raw : n;
+      rec[key] = isNaN(n) ? raw : n;
     }
   });
-
-  // 2. Validation check to make sure crucial fields are not cleared out
-  const emp = DB[editIdx];
-  if (!emp['SURE! NO'] || !emp['NAME OF EMPLOYEE'] || !emp['ID NO'] || !emp['PASSWORD']) {
-    alert('SURE! Number, ID Number, Password, and Name cannot be left blank.');
-    return;
-  }
-
-  // 3. Save updates, refresh the UI table, and close the modal
+  
   saveDB();
-  renderTable();
   closeModal('editOverlay');
-  toast('Employee payroll updated successfully!');
+  renderTable();
+  toast('💾 Changes saved instantly. Employees will see the update on their next login.');
 }
 
 // ══════════ ADD ══════════
@@ -761,17 +765,25 @@ function showAddModal() {
   buildForm(null, 'addFormFields');
   document.getElementById('addOverlay').classList.add('show');
 }
+
 function saveNewRecord() {
   const newRec = {};
   document.querySelectorAll('#addFormFields input[data-key]').forEach(inp => {
     const key = inp.getAttribute('data-key');
     const raw = inp.value.trim();
-    if (raw === '') { newRec[key] = null; }
-    else { const n = parseFloat(raw); newRec[key] = isNaN(n) ? raw : n; }
+    if (raw === '') {
+      newRec[key] = null;
+    } else {
+      const n = parseFloat(raw);
+      newRec[key] = isNaN(n) ? raw : n;
+    }
   });
+  
   if (!newRec['SURE! NO'] || !newRec['NAME OF EMPLOYEE'] || !newRec['ID NO'] || !newRec['PASSWORD']) {
-    alert('SURE! Number, ID Number, Password, and Name are all required.'); return;
+    alert('SURE! Number, ID Number, Password, and Name are all required.');
+    return;
   }
+  
   DB.push(newRec);
   saveDB();
   closeModal('addOverlay');
@@ -781,40 +793,39 @@ function saveNewRecord() {
 
 // ══════════ DELETE ══════════
 function deleteRecord(idx) {
-  const name = (DB[idx]['NAME OF EMPLOYEE']||'').trim();
-  if (!confirm(`Delete ${name}?\nThis cannot be undone.`)) return;
-  DB.splice(idx, 1);
-  saveDB();
-  renderTable();
-  toast('🗑️ Record deleted.');
-}
-
-// ══════════ PERIOD ══════════
-function changePeriod() {
-  const cur = getPeriod();
-  const val = prompt('Enter new period label:', cur);
-  if (val && val.trim()) {
-    localStorage.setItem(PERIOD_KEY, val.trim());
-    updatePeriodLabels();
-    toast('📅 Period label updated!');
+  const name = DB[idx]['NAME OF EMPLOYEE'] || 'this employee';
+  if (confirm(`❌ Are you sure you want to permanently delete ${name}?`)) {
+    DB.splice(idx, 1);
+    saveDB();
+    renderTable();
+    toast('🗑️ Record deleted.');
   }
 }
 
-// ══════════ EXPORT CSV ══════════
+// ══════════ EXPORT ══════════
 function exportCSV() {
-  const allKeys = Object.keys(DB[0]||{});
-  const rows = [allKeys.join(',')];
-  DB.forEach(e => {
-    const row = allKeys.map(k => {
-      const v = e[k]; if (v === null || v === undefined) return '';
-      const sv = String(v);
-      return sv.includes(',') || sv.includes('"') ? `"${sv.replace(/"/g,'""')}"` : sv;
+  if (!DB.length) { alert('No data to export.'); return; }
+  const headers = [];
+  for (const g in FIELD_MAP) { FIELD_MAP[g].forEach(f => { headers.push(f[0]); }); }
+  
+  let csvRows = [headers.join(',')];
+  
+  DB.forEach(row => {
+    const values = headers.map(h => {
+      let val = row[h];
+      if (val === null || val === undefined) val = '';
+      let str = String(val).replace(/"/g, '""');
+      if (str.includes(',') || str.includes('\n') || str.includes('"')) str = `"${str}"`;
+      return str;
     });
-    rows.push(row.join(','));
+    csvRows.push(values.join(','));
   });
-  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'payroll_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+  
+  const blob = new Blob([csvRows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'payroll_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
 }
 
 // ══════════ MODAL ══════════
@@ -837,11 +848,12 @@ function toast(msg) {
 
 // ══════════ KEYBOARD ══════════
 document.getElementById('empPassInput').addEventListener('keydown', e => { if(e.key==='Enter') doEmpLogin(); });
-document.getElementById('empIdInput').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('empPassInput').focus(); });
 document.getElementById('accPassInput').addEventListener('keydown', e => { if(e.key==='Enter') doAccLogin(); });
 
-// Init
+// ══════════ STARTUP ══════════
+loadDB();
 updatePeriodLabels();
+goLanding();
 </script>
 </body>
 </html>
