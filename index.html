@@ -610,28 +610,44 @@ function fmt2(v) {
   return '₱' + n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function renderTable() {
-  const tbody = document.querySelector('#adminSection table tbody');
+  // Finds the table body inside your admin section
+  const tbody = document.querySelector('table tbody') || document.querySelector('#adminSection table tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
 
+  // Filter logic if you have a search bar active
+  const q = document.querySelector('input[placeholder*="Search"]')?.value.toLowerCase() || '';
+
+  let count = 1;
   DB.forEach((emp, index) => {
+    const name = (emp['NAME OF EMPLOYEE'] || '').toString();
+    const sureNo = (emp['SURE! NO'] || '').toString();
+    const idNo = (emp['ID NO'] || '').toString();
+
+    // Skip row if it doesn't match search criteria
+    if (q && !name.toLowerCase().includes(q) && !sureNo.toLowerCase().includes(q) && !idNo.toLowerCase().includes(q)) {
+      return;
+    }
+
     const tr = document.createElement('tr');
-    
-    // Dynamically pull data directly from your DB array keys
     tr.innerHTML = `
+      <td>${count++}</td>
       <td>${emp['SURE! NO'] || ''}</td>
-      <td>${emp['NAME OF EMPLOYEE'] || ''}</td>
       <td>${emp['ID NO'] || ''}</td>
-      <td>${emp['DESIGNATION'] || ''}</td>
+      <td>${emp['PASSWORD'] || ''}</td>
+      <td>${emp['NAME OF EMPLOYEE'] || ''}</td>
       <td>₱${parseFloat(emp['RATE PER HOUR'] || 0).toFixed(2)}</td>
+      <td>₱${parseFloat(emp['POSITIONAL BONUS'] || 0).toFixed(2)}</td>
       <td>${parseFloat(emp['TOTAL HOURS WORKED'] || 0)}</td>
+      <td>₱${parseFloat(emp['TOTAL BASIC PAY'] || 0).toFixed(2)}</td>
       <td style="font-weight: bold; color: #2e7d32;">₱${parseFloat(emp['NET PAY'] || 0).toFixed(2)}</td>
       <td>
-        <button class="btn btn-primary btn-sm" onclick="openEditModal(${index})">Edit</button>
+        <button class="btn btn-primary btn-sm" onclick="showEditModal(${index})">Edit</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
   
   // Optional: Update your summary cards dynamically
   updateSummaryCards();
