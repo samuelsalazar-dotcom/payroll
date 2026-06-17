@@ -616,6 +616,33 @@ function saveDB() {
 }
 
 // ══════════ ACCOUNTING LOGIN ══════════
+// ══════════ DATABASE MANAGEMENT ══════════
+const DB_KEY = 'payroll_db_v1';
+const PERIOD_KEY = 'payroll_period_label';
+let DB = [];
+let editIdx = null; // Keeps track of which row the accountant is editing
+
+function loadDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (raw) {
+    try {
+      DB = JSON.parse(raw);
+    } catch(e) {
+      DB = [];
+    }
+  } else {
+    // If database is completely empty on the live web server, initialize it
+    DB = [];
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  }
+}
+
+function saveDB() {
+  // Saves data directly into the browser's permanent memory
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
+
+// ══════════ ACCOUNTING LOGIN ══════════
 function doAccLogin() {
   const passInp = document.getElementById('accPassInput').value.trim();
   
@@ -642,7 +669,6 @@ function doAccLogout() {
   document.getElementById('accPassInput').value = '';
   goLanding();
 }
-
 function renderTable() {
   const q = (document.getElementById('searchBox').value || '').toLowerCase();
   const tbody = document.getElementById('empTbody');
