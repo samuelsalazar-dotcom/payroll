@@ -589,25 +589,58 @@ function renderPayslip(e) {
 }
 
 // ══════════ ACCOUNTING LOGIN ══════════
-function doAccLogin() {
-  const pw = document.getElementById('accPassInput').value.trim();
-  if (pw !== ACC_PASSWORD) { document.getElementById('accErrMsg').style.display = 'block'; return; }
-  document.getElementById('accErrMsg').style.display = 'none';
-  loadDB();
-  hideAll();
-  document.getElementById('accDBSection').style.display = 'block';
-  renderTable();
+// ══════════ DATABASE MANAGEMENT ══════════
+const DB_KEY = 'payroll_db_v1';
+const PERIOD_KEY = 'payroll_period_label';
+let DB = [];
+let editIdx = null; // Keeps track of which row the accountant is editing
+
+function loadDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (raw) {
+    try {
+      DB = JSON.parse(raw);
+    } catch(e) {
+      DB = [];
+    }
+  } else {
+    // If database is completely empty on the live web server, initialize it
+    DB = [];
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  }
 }
+
+function saveDB() {
+  // Saves data directly into the browser's permanent memory
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
+
+// ══════════ ACCOUNTING LOGIN ══════════
+function doAccLogin() {
+  const passInp = document.getElementById('accPassInput').value.trim();
+  
+  // Replace '1234' with whatever master password you prefer for Accounting entry
+  if (passInp === '1234') { 
+    document.getElementById('accErrMsg').style.display = 'none';
+    hideAll();
+    
+    // 1. Force reload the database to ensure latest edits are captured
+    loadDB(); 
+    
+    // 2. Open the main Admin Dashboard
+    document.getElementById('accDBSection').style.display = 'block';
+    
+    // 3. Render your data directly into the newly updated live table layout
+    renderTable(); 
+    toast('🔑 Welcome back, Accountant! Live editing enabled.');
+  } else {
+    document.getElementById('accErrMsg').style.display = 'block';
+  }
+}
+
 function doAccLogout() {
   document.getElementById('accPassInput').value = '';
   goLanding();
-}
-// ══════════ TABLE ══════════
-function fmt2(v) {
-  if (v === null || v === undefined || v === '') return '—';
-  const n = parseFloat(v);
-  if (isNaN(n)) return String(v);
-  return '₱' + n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 function renderTable() {
