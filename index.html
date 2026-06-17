@@ -534,7 +534,7 @@ function doEmpLogin() {
   const idInp = document.getElementById('empIdInput').value.trim();
   const passInp = document.getElementById('empPassInput').value.trim();
   loadDB();
-  const found = DB.find(e => String(e['ID NO']).trim() === idInp && String(e['PASSWORD']).trim() === passInp);
+  const found = DB.find(e => String(e['ID NO']).trim() === idInp && String(e['PASSWORD']).trim().toUpperCase() === passInp.toUpperCase());
   if (found) {
     document.getElementById('empErrMsg').style.display = 'none';
     hideAll();
