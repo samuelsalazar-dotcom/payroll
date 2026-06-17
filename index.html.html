@@ -610,36 +610,32 @@ function fmt2(v) {
   return '₱' + n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function renderTable() {
-  const q = (document.getElementById('searchBox').value||'').toLowerCase();
-  const tbody = document.getElementById('empTbody');
-  let rows = ''; let shown = 0;
-  DB.forEach((e,i) => {
-    const nm = (e['NAME OF EMPLOYEE']||'').toLowerCase();
-    const sr = (e['SURE! NO']||'').toLowerCase();
-    const id = String(e['ID NO']||'').toLowerCase();
-    if (q && !nm.includes(q) && !sr.includes(q) && !id.includes(q)) return;
-    shown++;
-    rows += `<tr>
-      <td>${i+1}</td>
-      <td><span class="badge-sure">${e['SURE! NO']||''}</span></td>
-      <td>${e['ID NO']||''}</td>
-      <td><span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px">${e['PASSWORD']||''}</span></td>
-      <td><strong>${(e['NAME OF EMPLOYEE']||'').trim()}</strong></td>
-      <td class="num">${fmt2(e['MONTHLY BASIC RATE'])}</td>
-      <td class="num">${fmt2(e['POSITION BONUS'])}</td>
-      <td class="num">${e['DAYS WORKED']||'—'}</td>
-      <td class="num">${fmt2(e['TOTAL BASIC PAY'])}</td>
-      <td class="num" style="font-weight:700;color:#1a5226">${fmt2(e['NET PAY'])}</td>
-      <td>
-        <button class="btn btn-sm btn-edit" onclick="showEditModal(${i})">✏️ Edit</button>
-        <button class="btn btn-sm btn-del" onclick="deleteRecord(${i})" style="margin-left:4px">🗑️</button>
-      </td>
-    </tr>`;
-  });
-  tbody.innerHTML = rows || '<tr><td colspan="11" style="text-align:center;color:#aaa;padding:30px">No records found</td></tr>';
-  document.getElementById('statsBar').innerHTML = `Showing <strong>${shown}</strong> of <strong>${DB.length}</strong> employees`;
-}
+  const tbody = document.querySelector('#adminSection table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
 
+  DB.forEach((emp, index) => {
+    const tr = document.createElement('tr');
+    
+    // Dynamically pull data directly from your DB array keys
+    tr.innerHTML = `
+      <td>${emp['SURE! NO'] || ''}</td>
+      <td>${emp['NAME OF EMPLOYEE'] || ''}</td>
+      <td>${emp['ID NO'] || ''}</td>
+      <td>${emp['DESIGNATION'] || ''}</td>
+      <td>₱${parseFloat(emp['RATE PER HOUR'] || 0).toFixed(2)}</td>
+      <td>${parseFloat(emp['TOTAL HOURS WORKED'] || 0)}</td>
+      <td style="font-weight: bold; color: #2e7d32;">₱${parseFloat(emp['NET PAY'] || 0).toFixed(2)}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="openEditModal(${index})">Edit</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // Optional: Update your summary cards dynamically
+  updateSummaryCards();
+}
 // ══════════ FORM SECTIONS ══════════
 const SECTIONS = {
   '👤 Employee Identity': [
