@@ -238,111 +238,75 @@ td.num { text-align: right; }
 </div>
 
 <!-- ══════════ PAYSLIP VIEW ══════════ -->
-<div id="payslipSection">
-  <div class="top-bar blue">
-    <div>
-      <h2>🧾 Your Payslip</h2>
-      <div class="sub">Logged in as: <span id="topEmpName"></span></div>
-    </div>
-    <div class="top-bar-right">
-      <button class="top-btn" onclick="window.print()">🖨️ Print</button>
-      <button class="top-btn" onclick="doEmpLogout()">🔓 Log Out</button>
-    </div>
-  </div>
-  <div class="payslip-wrap">
-    <div class="payslip-card">
-      <div class="payslip-header">
-        <h2>PAYROLL COMPUTATION — MASTERFILE 2025</h2>
-        <div class="period">FOR THE PERIOD: MAY 11–25, 2026</div>
-        <p>Confidential — For Authorized Employee Only</p>
-      </div>
-      <div class="ps-section">
-        <div class="section-title">👤 Employee Information</div>
-        <div class="info-grid">
-          <div class="info-item"><label>SURE! Number</label><span id="p_sure"></span></div>
-          <div class="info-item"><label>ID Number</label><span id="p_id"></span></div>
-          <div class="info-item"><label>Employee Name</label><span id="p_name"></span></div>
-          <div class="info-item"><label>Monthly Basic Rate</label><span id="p_mbr"></span></div>
-          <div class="info-item"><label>Position Bonus</label><span id="p_pb"></span></div>
-          <div class="info-item"><label>De Minimis</label><span id="p_dm"></span></div>
+<div id="payslipSection" style="display: none; padding: 20px; max-width: 800px; margin: 0 auto; font-family: sans-serif;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: #f8f9fa; padding: 12px 20px; border-radius: 8px; border: 1px solid #e9ecef;" class="no-print">
+        <span style="font-weight: 600; color: #2c3e50;">👋 Welcome back, <span id="slipEmployeeNameHeader">Employee</span>!</span>
+        <div>
+            <button onclick="window.print()" style="background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; margin-right: 8px;">🖨️ Print Payslip</button>
+            <button onclick="doEmpLogout()" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer;">Log Out</button>
         </div>
-      </div>
-      <div class="ps-section alt">
-        <div class="section-title">🏛️ Government Numbers</div>
-        <div class="gov-grid">
-          <div class="gov-item"><label>TIN</label><span id="p_tin"></span></div>
-          <div class="gov-item"><label>SSS Number</label><span id="p_sss_no"></span></div>
-          <div class="gov-item"><label>PhilHealth No.</label><span id="p_phic_no"></span></div>
-          <div class="gov-item"><label>HDMF / Pag-IBIG</label><span id="p_hdmf_no"></span></div>
-          <div class="gov-item"><label>Bank Account No.</label><span id="p_bank"></span></div>
+    </div>
+
+    <div style="background: white; border: 2px solid #2c3e50; border-radius: 8px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative;">
+        
+        <div style="text-align: center; border-bottom: 2px dashed #bdc3c7; padding-bottom: 20px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #2c3e50; text-transform: uppercase; letter-spacing: 1px;">SURE! Payroll Services</h2>
+            <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 14px;" class="period">FOR THE PERIOD: May 11–25, 2026</p>
         </div>
-      </div>
-      <div class="ps-section">
-        <div class="section-title">💰 Earnings</div>
-        <table class="pay-table">
-          <thead><tr><th>Description</th><th>Hrs / Days</th><th>Amount (₱)</th></tr></thead>
-          <tbody>
-            <tr><td>Bi-Monthly Basic Pay</td><td id="p_days"></td><td id="p_bimbasic"></td></tr>
-            <tr><td>Absences</td><td id="p_abs_hrs"></td><td id="p_abs_amt"></td></tr>
-            <tr><td>Tardiness</td><td id="p_tard_min"></td><td id="p_tard_amt"></td></tr>
-            <tr><td>Basic Pay Adjustment</td><td>—</td><td id="p_bpa"></td></tr>
-            <tr class="subtotal"><td colspan="2">Total Basic Pay</td><td id="p_tbp"></td></tr>
-            <tr><td>Regular Overtime</td><td id="p_ot_hrs"></td><td id="p_ot_amt"></td></tr>
-            <tr><td>Regular Holiday</td><td id="p_rh_hrs"></td><td id="p_rh_amt"></td></tr>
-            <tr><td>Special Holiday / Rest Day</td><td id="p_sh_hrs"></td><td id="p_sh_amt"></td></tr>
-            <tr><td>Rest Day on Regular Holiday</td><td id="p_rdh_hrs"></td><td id="p_rdh_amt"></td></tr>
-            <tr><td>Rest Day on Special Holiday</td><td id="p_rdsh_hrs"></td><td id="p_rdsh_amt"></td></tr>
-            <tr><td>Regular Holiday OT</td><td id="p_rhot_hrs"></td><td id="p_rhot_amt"></td></tr>
-            <tr><td>Special Holiday OT</td><td id="p_shot_hrs"></td><td id="p_shot_amt"></td></tr>
-            <tr class="subtotal"><td colspan="2">Total Overtime / Holiday Pay</td><td id="p_tot_ot"></td></tr>
-            <tr><td>Night Diff. Regular</td><td id="p_nd_hrs"></td><td id="p_nd_amt"></td></tr>
-            <tr><td>Night Diff. on Reg. Holiday</td><td id="p_ndh_hrs"></td><td id="p_ndh_amt"></td></tr>
-            <tr><td>Night Diff. on Spec. Holiday</td><td id="p_ndsh_hrs"></td><td id="p_ndsh_amt"></td></tr>
-            <tr><td>Night Diff. Overtime</td><td id="p_ndot_hrs"></td><td id="p_ndot_amt"></td></tr>
-            <tr class="subtotal"><td colspan="2">Total Night Diff. Pay</td><td id="p_tot_nd"></td></tr>
-            <tr><td>Non-Basic Pay Adjustment</td><td>—</td><td id="p_nbpa"></td></tr>
-            <tr><td>Position Allowance</td><td>—</td><td id="p_posallow"></td></tr>
-            <tr><td>Transportation after 10PM</td><td>—</td><td id="p_trans10"></td></tr>
-            <tr><td>Referral Fee / Meal Allowance</td><td>—</td><td id="p_meal"></td></tr>
-            <tr><td>Daily Transportation Allowance</td><td>—</td><td id="p_transda"></td></tr>
-            <tr><td>SIL Year 2026</td><td id="p_sil_hrs"></td><td id="p_sil_amt"></td></tr>
-            <tr><td>13th Month Pay</td><td>—</td><td id="p_13th"></td></tr>
-            <tr><td>Service Charge</td><td>—</td><td id="p_sc"></td></tr>
-            <tr class="subtotal"><td colspan="2">Total Taxable Gross Pay</td><td id="p_gross"></td></tr>
-          </tbody>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; background: #fcfcfc; padding: 15px; border-radius: 6px; border: 1px solid #f0f0f0;">
+            <div>
+                <p style="margin: 4px 0;"><strong style="color: #7f8c8d; font-size: 12px; display: block; text-transform: uppercase;">Employee Name</strong> <span id="slipEmployeeName" style="font-size: 16px; font-weight: 700; color: #2c3e50;">—</span></p>
+                <p style="margin: 12px 0 4px 0;"><strong style="color: #7f8c8d; font-size: 12px; display: block; text-transform: uppercase;">ID Number</strong> <span id="slipIdNo" style="font-family: monospace; font-size: 15px;">—</span></p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 4px 0;"><strong style="color: #7f8c8d; font-size: 12px; display: block; text-transform: uppercase;">SURE! Account No.</strong> <span id="slipSureNo" style="background: #e8f4fd; color: #2980b9; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 14px;">—</span></p>
+                <p style="margin: 12px 0 4px 0;"><strong style="color: #7f8c8d; font-size: 12px; display: block; text-transform: uppercase;">Days Worked</strong> <span id="slipDaysWorked" style="font-size: 15px; font-weight: 600;">—</span></p>
+            </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+                <tr style="background: #2c3e50; color: white;">
+                    <th style="text-align: left; padding: 10px 12px; border-radius: 4px 0 0 4px;">Description</th>
+                    <th style="text-align: right; padding: 10px 12px; border-radius: 0 4px 4px 0;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px; color: #34495e;">Monthly Basic Rate</td>
+                    <td id="slipBasicRate" style="text-align: right; padding: 12px; font-weight: 600; color: #2c3e50;">—</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px; color: #34495e;">Total Basic Pay (Pro-rated)</td>
+                    <td id="slipTotalBasicPay" style="text-align: right; padding: 12px; font-weight: 600; color: #2c3e50;">—</td>
+                </tr>
+                <tr style="border-bottom: 2px solid #2c3e50;">
+                    <td style="padding: 12px; color: #34495e;">Position Allowance / Bonus</td>
+                    <td id="slipPositionBonus" style="text-align: right; padding: 12px; font-weight: 600; color: #2c3e50;">—</td>
+                </tr>
+                <tr style="background: #f8f9fa;">
+                    <td style="padding: 14px 12px; font-size: 16px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Net Take-Home Pay</td>
+                    <td id="slipNetPay" style="text-align: right; padding: 14px 12px; font-size: 18px; font-weight: 800; color: #27ae60;">—</td>
+                </tr>
+            </tbody>
         </table>
-      </div>
-      <div class="deduct-section">
-        <div class="section-title">✂️ Deductions</div>
-        <div class="deduct-grid">
-          <div>
-            <div class="deduct-row"><span>SSS</span><span id="p_d_sss"></span></div>
-            <div class="deduct-row"><span>PhilHealth</span><span id="p_d_phic"></span></div>
-            <div class="deduct-row"><span>Pag-IBIG / HDMF</span><span id="p_d_hdmf"></span></div>
-            <div class="deduct-row"><span>Withholding Tax</span><span id="p_d_tax"></span></div>
-            <div class="deduct-row"><span>SSS Loan</span><span id="p_d_sssloan"></span></div>
-          </div>
-          <div>
-            <div class="deduct-row"><span>SSS WISP</span><span id="p_d_wisp"></span></div>
-            <div class="deduct-row"><span>HDMF Modified</span><span id="p_d_hdmfmod"></span></div>
-            <div class="deduct-row"><span>Pag-IBIG Loan</span><span id="p_d_pibloan"></span></div>
-            <div class="deduct-row"><span>Bereavement / Medical</span><span id="p_d_bma"></span></div>
-            <div class="deduct-row"><span>Others</span><span id="p_d_others"></span></div>
-          </div>
+
+        <div style="text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; padding-top: 15px;">
+            This is a system-generated document based on the Masterfile record. No signature required.
         </div>
-        <div class="deduct-total"><span>TOTAL DEDUCTIONS</span><span id="p_tot_deduct"></span></div>
-      </div>
-      <div class="net-pay-bar">
-        <div class="label">NET PAY THIS PERIOD</div>
-        <div class="amount" id="p_netpay">₱0.00</div>
-      </div>
-      <div class="payslip-notice">
-        🔔 This payslip is confidential. To update your password or question any amount, please coordinate with <strong>Accounting</strong>.
-      </div>
-      <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
     </div>
-  </div>
 </div>
+
+<style>
+    @media print {
+        body * { visibility: hidden; }
+        #payslipSection, #payslipSection * { visibility: visible; }
+        #payslipSection { position: absolute; left: 0; top: 0; width: 100%; }
+        .no-print { display: none !important; }
+    }
+</style>
 
 <!-- ══════════ ACCOUNTING LOGIN ══════════ -->
 <div id="accLoginSection" style="display:none; align-items:center; justify-content:center; min-height:100vh; padding:20px;">
@@ -526,6 +490,46 @@ function showAccLogin() {
   document.getElementById('accPassInput')?.focus(); 
 }
 // ══════════ LOGINS ══════════
+    // ══════════ PAYSLIP DATA INJECTION ENGINE ══════════
+function renderPayslip(emp) {
+  // Helper to safely fetch value or fallback to a dash if missing
+  const getVal = (key) => (emp[key] !== null && emp[key] !== undefined) ? emp[key] : '—';
+  
+  // Helper to format currency numbers cleanly (₱0.00)
+  const fmt = (val) => {
+    const n = parseFloat(val);
+    if (isNaN(n)) return '₱0.00';
+    return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  // 1. Update text fields (Names, IDs)
+  // Check your HTML lines 300-330 for elements matching these IDs and update if they exist
+  const textMatches = {
+    'p_name': 'NAME OF EMPLOYEE',
+    'p_id': 'ID NO',
+    'p_sure': 'SURE! NO',
+    'p_days': 'DAYS WORKED'
+  };
+  
+  for (const [elementId, dataKey] of Object.entries(textMatches)) {
+    const el = document.getElementById(elementId);
+    if (el) el.textContent = getVal(dataKey);
+  }
+
+  // 2. Update currency fields (Rates, Bonuses, calculations)
+  const moneyMatches = {
+    'p_basic_rate': 'MONTHLY BASIC RATE',
+    'p_basic_pay': 'TOTAL BASIC PAY',
+    'p_bonus': 'POSITION BONUS',
+    'p_netpay': 'NET PAY'
+  };
+
+  for (const [elementId, dataKey] of Object.entries(moneyMatches)) {
+   if (el) el.textContent = fmt(getVal(dataKey));
+    }
+  }
+} // <--- THIS ONE CLOSES THE ENTIRE renderPayslip FUNCTION
+
 function doEmpLogin() {
   const idInp = document.getElementById('empIdInput').value.trim();
   const passInp = document.getElementById('empPassInput').value.trim();
