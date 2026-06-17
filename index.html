@@ -509,11 +509,22 @@ function hideAll() {
     if(el) el.style.display = 'none';
   });
 }
+function goLanding() { 
+  hideAll(); 
+  document.getElementById('landingSection').style.display = 'flex'; 
+}
 
-function goLanding() { hideAll(); document.getElementById('landingSection').style.display = 'flex'; }
-function showEmpLogin() { hideAll(); document.getElementById('empLoginSection').style.display = 'flex'; document.getElementById('empIdInput').focus(); }
-function showAccLogin() { hideAll(); document.getElementById('accLoginSection').style.display = 'flex'; document.getElementById('accPassInput').focus(); }
+function showEmpLogin() { 
+  hideAll(); 
+  document.getElementById('empLoginSection').style.display = 'flex'; 
+  document.getElementById('empIdInput')?.focus(); 
+}
 
+function showAccLogin() { 
+  hideAll(); 
+  document.getElementById('accLoginSection').style.display = 'flex'; 
+  document.getElementById('accPassInput')?.focus(); 
+}
 // ══════════ LOGINS ══════════
 function doEmpLogin() {
   const idInp = document.getElementById('empIdInput').value.trim();
