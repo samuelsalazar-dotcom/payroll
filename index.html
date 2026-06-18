@@ -522,11 +522,11 @@ function renderPayslip(emp) {
     'p_bonus': 'POSITION BONUS',
     'p_netpay': 'NET PAY'
   };
-  for (const [elementId, dataKey] of Object.entries(moneyMatches)) {
-   if (el) el.textContent = fmt(getVal(dataKey));
+    for (const [elementId, dataKey] of Object.entries(moneyMatches)) {
+        const el = document.getElementById(elementId);
+        if (el) el.textContent = fmt(getVal(dataKey));
     }
-  }
-} // <--- THIS ONE CLOSES THE ENTIRE renderPayslip FUNCTION
+}
 function doEmpLogin() {
   const idInp = document.getElementById('empIdInput').value.trim();
   const passInp = document.getElementById('empPassInput').value.trim();
