@@ -568,51 +568,82 @@ function doAccLogout() {
 }
 
 // ══════════ TABLE RENDERING ══════════
+// ==================== TABLE RENDERING ====================
 function fmt2(v) {
-  if (v === null || v === undefined || v === '') return '—';
-  const n = parseFloat(v);
-  if (isNaN(n)) return String(v);
-  return '₱' + n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if (v === null || v === undefined || v === '') return '-';
+    const n = parseFloat(v);
+    if (isNaN(n)) return String(v);
+    return '₱' + n.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 function renderTable() {
-  const q = (document.getElementById('searchBox')?.value || '').toLowerCase();
-  const tbody = document.getElementById('empTbody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  
-  let shown = 0;
-  
-  DB.forEach((e, i) => {
-    const nm = (e['NAME OF EMPLOYEE'] || '').toLowerCase();
-    const sr = (e['SURE! NO'] || '').toLowerCase();
-    const id = String(e['ID NO'] || '').toLowerCase();
+    const q = (document.getElementById('searchBox')?.value || '').toLowerCase();
+    const tbody = document.getElementById('empTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    let shown = 0;
+
+    DB.forEach((e, i) => {
+        const nm = (e['NAME OF EMPLOYEE'] || '').toLowerCase();
+        const sr = (e['SURE! NO'] || '').toLowerCase();
+        const id = String(e['ID NO'] || '').toLowerCase();
+
+        if (q && !nm.includes(q) && !sr.includes(q) && !id.includes(q)) return;
+        shown++;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td><span class="badge-sure">${e['SURE! NO'] || ''}</span></td>
+            <td>${e['ID NO'] || ''}</td>
+            <td><span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;">${e['PASSWORD'] || ''}</span></td>
+            <td><strong>${(e['NAME OF EMPLOYEE'] || '').trim()}</strong></td>
+            <td class="num">${fmt2(e['MONTHLY BASIC RATE'])}</td>
+            <td class="num">${fmt2(e['POSITION BONUS'])}</td>
+            <td class="num">${e['DAYS WORKED'] || '-'}</td>
+            <td class="num" style="font-weight:600;">${fmt2(e['TOTAL BASIC PAY'])}</td>
+            <td class="num" style="font-weight:700;color:#27ae60;">${fmt2(e['NET PAY'])}</td>
+            <td>
+                <button class="btn btn-blue btn-sm" onclick="showEditModal(${i})">Edit</button>
+                <button class="btn btn-red btn-sm" onclick="deleteRecord(${i})">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    const stats = document.getElementById('statsBar');
+    if (stats) stats.textContent = `📊 Showing ${shown} of ${DB.length} employee records.`;
+}
+
+// ==================== ACTIONS ====================
+function addEmployee(e) {
+    if (e) e.preventDefault();
     
-    if (q && !nm.includes(q) && !sr.includes(q) && !id.includes(q)) return;
-    shown++;
+    const form = document.getElementById('addEmpForm') || e?.target;
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const rowData = Object.fromEntries(formData.entries());
     
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td><span class="badge-sure">${e['SURE! NO'] || ''}</span></td>
-      <td>${e['ID NO'] || ''}</td>
-      <td><span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px">${e['PASSWORD'] || ''}</span></td>
-      <td><strong>${(e['NAME OF EMPLOYEE'] || '').trim()}</strong></td>
-      <td class="num">${fmt2(e['MONTHLY BASIC RATE'])}</td>
-      <td class="num">${fmt2(e['POSITION BONUS'])}</td>
-      <td class="num">${e['DAYS WORKED'] || '—'}</td>
-      <td class="num" style="font-weight:600">${fmt2(e['TOTAL BASIC PAY'])}</td>
-      <td class="num" style="font-weight:700;color:#27ae60">${fmt2(e['NET PAY'])}</td>
-      <td>
-        <button class="btn btn-blue btn-sm" onclick="showEditModal(${i})">Edit</button>
-        <button class="btn btn-red btn-sm" onclick="deleteRecord(${i})">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  
-  const stats = document.getElementById('statsBar');
-  if(stats) stats.textContent = `📊 Showing ${shown} of ${DB.length} employee records.`;
+    // 1. Push data to your master array
+    DB.push(rowData);
+    
+    // 2. THE FIX: Force the screen to update right now
+    renderTable();
+    
+    // 3. Save to localStorage
+    saveDB();
+    
+    // 4. Reset the form fields and close the window
+    alert("Employee added successfully!");
+    form.reset();
+    if (typeof closeModal === 'function') {
+        closeModal('addEmpModal');
+    }
+}
+
+function saveDB() {
+    localStorage.setItem('payroll_DB', JSON.stringify(DB));
 }
 
 // ══════════ EDIT SYSTEM ══════════
