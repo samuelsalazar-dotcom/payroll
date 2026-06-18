@@ -584,10 +584,9 @@ function renderTable() {
     let shown = 0;
 
     DB.forEach((e, i) => {
-        const nm = (e['NAME OF EMPLOYEE'] || '').toLowerCase();
-        const sr = (e['SURE! NO'] || '').toLowerCase();
+const nm = String(e['NAME OF EMPLOYEE'] || '').toLowerCase();
+        const sr = String(e['SURE! NO'] || '').toLowerCase();
         const id = String(e['ID NO'] || '').toLowerCase();
-
         if (q && !nm.includes(q) && !sr.includes(q) && !id.includes(q)) return;
         shown++;
 
@@ -624,14 +623,8 @@ function addEmployee(e) {
 
     const formData = new FormData(form);
     const rowData = Object.fromEntries(formData.entries());
-    
-    // 1. Push data to your master array
-    DB.push(rowData);
-    
-    // 2. THE FIX: Force the screen to update right now
+    DB.push(rowData); 
     renderTable();
-    
-    // 3. Save to localStorage
     saveDB();
     
     // 4. Reset the form fields and close the window
